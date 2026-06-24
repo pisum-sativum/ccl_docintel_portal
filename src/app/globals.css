@@ -1,0 +1,149 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  
+  --color-bg-base: var(--bg-base);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-navbar: var(--bg-navbar);
+  
+  --color-text-main: var(--text-main);
+  --color-text-muted: var(--text-muted);
+  --color-text-inverse: var(--text-inverse);
+  
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  
+  --color-primary: var(--primary);
+  --color-primary-text: var(--primary-text);
+  
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  
+  --color-error: var(--error);
+  --color-success: var(--success);
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─── LIGHT THEME (Government / Enterprise Grade) ─── */
+:root {
+  /* Backgrounds: Soothing, highly readable light grays and whites */
+  --bg-base: #F1F5F9; /* Slate 100 - very soft background */
+  --bg-surface: #FFFFFF; /* Pure white cards for crisp contrast */
+  --bg-navbar: #2E4052; /* Charcoal Blue - Classic Gov Header */
+  
+  /* Typography: High contrast for accessibility */
+  --text-main: #0F172A; /* Slate 900 - nearly black */
+  --text-muted: #475569; /* Slate 600 - legible gray */
+  --text-inverse: #FFFFFF; /* White text on navbar/buttons */
+  
+  /* Borders: Subtle definition without clutter */
+  --border-subtle: #E2E8F0; /* Slate 200 */
+  --border-strong: #CBD5E1; /* Slate 300 */
+  
+  /* Brand/Actions */
+  --primary: #2E4052; /* Charcoal Blue */
+  --primary-text: #FFFFFF;
+  
+  --accent: #FFC857; /* Golden Pollen */
+  --accent-text: #0F172A; /* Dark slate text on amber */
+  
+  /* Feedback */
+  --error: #DC2626; /* Red 600 */
+  --success: #BDD9BF; /* Tea Green (User's palette) */
+}
+
+/* ─── DARK THEME (Soothing, Non-distracting) ─── */
+.dark {
+  /* Backgrounds: Deep Slate (not pure black) to reduce eye strain */
+  --bg-base: #0F172A; /* Slate 900 */
+  --bg-surface: #1E293B; /* Slate 800 */
+  --bg-navbar: #0F172A; /* Match base for seamless dark mode */
+  
+  /* Typography: Soft off-whites */
+  --text-main: #F8FAFC; /* Slate 50 */
+  --text-muted: #94A3B8; /* Slate 400 */
+  --text-inverse: #FFFFFF; 
+  
+  /* Borders: Visible but not blinding */
+  --border-subtle: #334155; /* Slate 700 */
+  --border-strong: #475569; /* Slate 600 */
+  
+  /* Brand/Actions */
+  --primary: #334155; /* Slate 700 buttons */
+  --primary-text: #F8FAFC;
+  
+  --accent: #FFC857; /* Golden Pollen - pops beautifully in dark mode */
+  --accent-text: #0F172A;
+  
+  /* Feedback */
+  --error: #EF4444; /* Red 500 */
+  --success: #BDD9BF; /* Tea Green */
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-main);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn { animation: fadeInUp 0.3s ease-out both; }
+.animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+/* ─── COMPONENT CLASSES ─── */
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-text);
+  font-weight: 600;
+  border-radius: 0.5rem; /* Standard rounded, less playful than full pill */
+  padding: 0.625rem 1.25rem;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+.btn-primary:hover {
+  filter: brightness(1.15);
+}
+.btn-primary:active { transform: translateY(1px); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-accent {
+  background-color: var(--accent);
+  color: var(--accent-text);
+  font-weight: 700;
+  border-radius: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.btn-accent:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+.btn-accent:active { transform: translateY(1px); }
+.btn-accent:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+
+.surface-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.75rem; /* Clean enterprise rounding */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* Autofill fix */
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 30px var(--bg-surface) inset !important;
+  -webkit-text-fill-color: var(--text-main) !important;
+}
