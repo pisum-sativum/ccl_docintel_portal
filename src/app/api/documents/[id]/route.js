@@ -1,5 +1,5 @@
 // DELETE /api/documents/[id]  →  DELETE backend /api/documents/{id}
-export const maxDuration = 60;\nexport async function DELETE(request, { params }) {
+export async function DELETE(request, { params }) {
   const BACKEND = 'https://ccl-docintel-portal-backend.onrender.com';
   if (!BACKEND) return Response.json({ detail: "BACKEND_API_URL not configured on server." }, { status: 500 });
   const id = (await params).id;

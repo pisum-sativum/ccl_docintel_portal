@@ -1,7 +1,7 @@
 // GET /api/documents/[id]/file  →  streams the physical file from backend
 // Used for PDF iframe and image preview in the View Document modal.
 // Token is accepted as a query param (?token=...) for src= URL usage.
-export const maxDuration = 60;\nexport async function GET(request, { params }) {
+export async function GET(request, { params }) {
   const BACKEND = 'https://ccl-docintel-portal-backend.onrender.com';
   const id = (await params).id;
   try {
