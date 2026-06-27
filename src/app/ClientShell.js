@@ -110,12 +110,60 @@ function NavBar() {
   );
 }
 
+function BackendWakeupLoader({ children }) {
+  const [isAwake, setIsAwake] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    let timeout;
+    
+    const pingBackend = async () => {
+      try {
+        const res = await fetch('/api/documents?skip=0&limit=1'); 
+        if (res.ok) {
+          if (mounted) setIsAwake(true);
+        } else {
+          throw new Error('Not ready');
+        }
+      } catch (e) {
+        if (mounted) {
+          setErrorMsg('Waking up cloud backend... Please wait up to 60 seconds.');
+          timeout = setTimeout(pingBackend, 4000); 
+        }
+      }
+    };
+    
+    pingBackend();
+    return () => { mounted = false; clearTimeout(timeout); };
+  }, []);
+
+  if (isAwake) return children;
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] p-6">
+      <div className="w-16 h-16 border-4 border-border-strong border-t-accent rounded-full animate-spin mb-6 shadow-md" />
+      <div className="text-center max-w-md bg-bg-surface p-8 rounded-3xl border-2 border-border-strong shadow-lg">
+        <h2 className="text-xl font-black text-text-main mb-3">Connecting to Servers</h2>
+        <p className="text-sm font-bold text-accent mb-4 animate-pulse">{errorMsg || 'Initializing connection...'}</p>
+        <p className="text-xs text-text-muted leading-relaxed">
+          The backend API is hosted on Render's Free Tier, which automatically pauses after 15 minutes of inactivity. 
+          <br /><br />
+          <strong>It takes about 50 seconds to boot back up.</strong> Please hold on!
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function ClientShell({ children }) {
   return (
     <AuthProvider>
       <NavBar />
       <main className="bg-bg-base min-h-[calc(100vh-64px)] transition-colors duration-300">
-        {children}
+        <BackendWakeupLoader>
+          {children}
+        </BackendWakeupLoader>
       </main>
     </AuthProvider>
   );
