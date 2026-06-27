@@ -1,6 +1,7 @@
 // DELETE /api/documents/[id]  →  DELETE backend /api/documents/{id}
 export async function DELETE(request, { params }) {
   const BACKEND = process.env.BACKEND_API_URL;
+  if (!BACKEND) return Response.json({ detail: "BACKEND_API_URL not configured on server." }, { status: 500 });
   const id = (await params).id;
   try {
     const authHeader = request.headers.get("Authorization");
