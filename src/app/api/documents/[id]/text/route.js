@@ -1,6 +1,6 @@
 // Shared helper: returns a clear 500 if the env var isn't configured in Vercel
 function requireBackend() {
-  const url = process.env.BACKEND_API_URL;
+  const url = process.env.BACKEND_API_URL || 'https://ccl-docintel-portal-backend.onrender.com';
   if (!url) throw new Error("BACKEND_API_URL is not set. Add it in Vercel → Settings → Environment Variables.");
   return url;
 }

@@ -1,5 +1,5 @@
 export async function GET(request) {
-  const BACKEND = process.env.BACKEND_API_URL;
+  const BACKEND = process.env.BACKEND_API_URL || 'https://ccl-docintel-portal-backend.onrender.com';
   try {
     const authHeader = request.headers.get("authorization") || "";
     const response = await fetch(`${BACKEND}/api/auth/me`, {

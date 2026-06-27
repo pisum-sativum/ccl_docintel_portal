@@ -2,7 +2,7 @@
 // Used for PDF iframe and image preview in the View Document modal.
 // Token is accepted as a query param (?token=...) for src= URL usage.
 export async function GET(request, { params }) {
-  const BACKEND = process.env.BACKEND_API_URL;
+  const BACKEND = process.env.BACKEND_API_URL || 'https://ccl-docintel-portal-backend.onrender.com';
   const id = (await params).id;
   try {
     // Support both Authorization header and ?token= query param
