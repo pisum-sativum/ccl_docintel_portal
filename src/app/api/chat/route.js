@@ -1,5 +1,5 @@
 export async function POST(request) {
-  const BACKEND = process.env.BACKEND_API_URL || 'https://ccl-docintel-portal-backend.onrender.com';
+  const BACKEND = 'https://ccl-docintel-portal-backend.onrender.com';
   try {
     const body = await request.json();
 
