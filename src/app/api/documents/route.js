@@ -1,8 +1,9 @@
 export async function GET(request) {
+  const BACKEND = process.env.BACKEND_API_URL;
   try {
     const { searchParams } = new URL(request.url);
     const authHeader = request.headers.get("Authorization");
-    const response = await fetch(`http://127.0.0.1:8000/api/documents?${searchParams.toString()}`, {
+    const response = await fetch(`${BACKEND}/api/documents?${searchParams.toString()}`, {
       headers: authHeader ? { "Authorization": authHeader } : {}
     });
     const text = await response.text();

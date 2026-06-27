@@ -1,10 +1,11 @@
 export async function POST(request) {
+  const BACKEND = process.env.BACKEND_API_URL;
   try {
     const body = await request.json();
 
     const authHeader = request.headers.get("Authorization");
 
-    const response = await fetch("http://127.0.0.1:8000/api/chat", {
+    const response = await fetch(`${BACKEND}/api/chat`, {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",

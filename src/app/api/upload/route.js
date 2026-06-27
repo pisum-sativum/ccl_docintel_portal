@@ -1,8 +1,9 @@
 export async function POST(request) {
+  const BACKEND = process.env.BACKEND_API_URL;
   try {
     const authHeader = request.headers.get("authorization") || "";
     const formData = await request.formData();
-    const response = await fetch("http://127.0.0.1:8000/api/upload", {
+    const response = await fetch(`${BACKEND}/api/upload`, {
       method: "POST",
       headers: { "Authorization": authHeader },
       body: formData,

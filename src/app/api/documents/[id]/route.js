@@ -1,8 +1,9 @@
 export async function GET(request, { params }) {
+  const BACKEND = process.env.BACKEND_API_URL;
   const id = (await params).id;
   try {
     const authHeader = request.headers.get("Authorization");
-    const response = await fetch(`http://127.0.0.1:8000/api/documents/${id}/text`, {
+    const response = await fetch(`${BACKEND}/api/documents/${id}/text`, {
       headers: authHeader ? { "Authorization": authHeader } : {}
     });
     const data = await response.json();
@@ -13,11 +14,12 @@ export async function GET(request, { params }) {
 }
 
 export async function PUT(request, { params }) {
+  const BACKEND = process.env.BACKEND_API_URL;
   const id = (await params).id;
   try {
     const authHeader = request.headers.get("Authorization");
     const body = await request.json();
-    const response = await fetch(`http://127.0.0.1:8000/api/documents/${id}/text`, {
+    const response = await fetch(`${BACKEND}/api/documents/${id}/text`, {
       method: "PUT",
       headers: { 
         "Content-Type": "application/json",
@@ -33,10 +35,11 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
+  const BACKEND = process.env.BACKEND_API_URL;
   const id = (await params).id;
   try {
     const authHeader = request.headers.get("Authorization");
-    const response = await fetch(`http://127.0.0.1:8000/api/documents/${id}`, {
+    const response = await fetch(`${BACKEND}/api/documents/${id}`, {
       method: "DELETE",
       headers: authHeader ? { "Authorization": authHeader } : {}
     });

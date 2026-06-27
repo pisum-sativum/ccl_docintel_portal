@@ -1,7 +1,8 @@
 export async function GET(request) {
+  const BACKEND = process.env.BACKEND_API_URL;
   try {
     const authHeader = request.headers.get("Authorization");
-    const response = await fetch("http://127.0.0.1:8000/api/analytics/summary", {
+    const response = await fetch(`${BACKEND}/api/analytics/summary`, {
       headers: authHeader ? { "Authorization": authHeader } : {}
     });
     const data = await response.json();
