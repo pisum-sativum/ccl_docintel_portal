@@ -5,7 +5,7 @@ function requireBackend() {
 
 // GET/POST /api/documents/[id]/text  →  GET backend /api/documents/{id}/text
 // The frontend view modal sends a POST; the backend accepts both via dual decorator.
-export async function GET(request, { params }) {
+export const maxDuration = 60;\nexport async function GET(request, { params }) {
   try {
     const BACKEND = requireBackend();
     const id = (await params).id;
@@ -25,7 +25,7 @@ export async function GET(request, { params }) {
 }
 
 // Frontend sends POST to trigger text load (DocumentLibrary.jsx line 76)
-export async function POST(request, { params }) {
+export const maxDuration = 60;\nexport async function POST(request, { params }) {
   try {
     const BACKEND = requireBackend();
     const id = (await params).id;
@@ -45,7 +45,7 @@ export async function POST(request, { params }) {
 }
 
 // PUT /api/documents/[id]/text  →  PUT backend /api/documents/{id}/text
-export async function PUT(request, { params }) {
+export const maxDuration = 60;\nexport async function PUT(request, { params }) {
   try {
     const BACKEND = requireBackend();
     const id = (await params).id;

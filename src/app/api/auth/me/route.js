@@ -1,4 +1,4 @@
-export async function GET(request) {
+export const maxDuration = 60;\nexport async function GET(request) {
   const BACKEND = 'https://ccl-docintel-portal-backend.onrender.com';
   try {
     const authHeader = request.headers.get("authorization") || "";
