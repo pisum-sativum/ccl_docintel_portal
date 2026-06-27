@@ -121,10 +121,11 @@ function BackendWakeupLoader({ children }) {
     const pingBackend = async () => {
       try {
         const res = await fetch('/api/documents?skip=0&limit=1'); 
-        if (res.ok) {
+        // 401 Unauthorized means the backend is awake, just that the user isn't logged in!
+        if (res.ok || res.status === 401 || res.status === 403) {
           if (mounted) setIsAwake(true);
         } else {
-          throw new Error('Not ready');
+          throw new Error(`Not ready (${res.status})`);
         }
       } catch (e) {
         if (mounted) {
