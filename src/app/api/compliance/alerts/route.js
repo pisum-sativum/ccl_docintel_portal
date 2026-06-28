@@ -1,13 +1,20 @@
-export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
 
 export async function GET(request) {
-  const BACKEND = 'https://ccl-docintel-portal-backend.onrender.com';
+  const BACKEND = "https://ccl-docintel-portal-backend.onrender.com";
   try {
     const authHeader = request.headers.get("Authorization");
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 55000);
     const response = await fetch(`${BACKEND}/api/compliance/alerts`, {
-      headers: authHeader ? { "Authorization": authHeader } : {},
-      cache: 'no-store'
+      headers: authHeader ? { Authorization: authHeader } : {},
+      cache: "no-store",
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
+
     const text = await response.text();
     let data;
     try {
@@ -17,9 +24,14 @@ export async function GET(request) {
     }
     return Response.json(data, { status: response.status });
   } catch (err) {
+    const isTimeout = err.name === "AbortError";
     return Response.json(
-      { detail: `Proxy error: ${err.message}` },
-      { status: 502 }
+      {
+        detail: isTimeout
+          ? "Backend is warming up."
+          : `Proxy error: ${err.message}`,
+      },
+      { status: 503 },
     );
   }
 }

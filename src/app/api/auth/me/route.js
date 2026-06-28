@@ -1,16 +1,30 @@
+export const maxDuration = 60;
+
 export async function GET(request) {
-  const BACKEND = 'https://ccl-docintel-portal-backend.onrender.com';
+  const BACKEND = "https://ccl-docintel-portal-backend.onrender.com";
   try {
     const authHeader = request.headers.get("authorization") || "";
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 55000);
     const response = await fetch(`${BACKEND}/api/auth/me`, {
-      headers: { "Authorization": authHeader },
+      headers: { Authorization: authHeader },
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
+
     const text = await response.text();
     let data;
-    try { data = JSON.parse(text); }
-    catch { data = { detail: text || `Backend error (HTTP ${response.status})` }; }
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { detail: text || `Backend error (HTTP ${response.status})` };
+    }
     return Response.json(data, { status: response.status });
   } catch (err) {
-    return Response.json({ detail: `Proxy error: ${err.message}` }, { status: 502 });
+    return Response.json(
+      { detail: `Proxy error: ${err.message}` },
+      { status: 502 },
+    );
   }
 }
