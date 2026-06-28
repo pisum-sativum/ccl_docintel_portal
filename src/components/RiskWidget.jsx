@@ -23,7 +23,7 @@ export default function RiskWidget() {
       } catch { /* fail silently */ }
     };
     fetch_();
-    const id = setInterval(fetch_, 5000);
+    const id = setInterval(fetch_, 1000);
     return () => clearInterval(id);
   }, [token]);
 

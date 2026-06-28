@@ -42,7 +42,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!user) return;
     fetchMetrics();
-    const id = setInterval(fetchMetrics, 5000);
+    const id = setInterval(fetchMetrics, 1000); // Poll every 1s so badge updates feel instant
     return () => clearInterval(id);
   }, [user]);
 

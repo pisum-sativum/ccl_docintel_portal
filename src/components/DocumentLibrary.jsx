@@ -51,10 +51,10 @@ export default function DocumentLibrary() {
     const up = () => fetchDocuments();
     window.addEventListener('ccl-document-uploaded', up);
     
-    // Poll every 3 seconds if any document is currently scanning
+    // Poll every 1s if any document is currently scanning
     let interval;
     if (documents.some(d => d.risk_level === 'Scanning...')) {
-      interval = setInterval(() => fetchDocuments(), 3000);
+      interval = setInterval(() => fetchDocuments(), 1000); // 1s poll for instant badge updates
     }
     
     return () => {
