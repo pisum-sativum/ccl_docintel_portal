@@ -34,11 +34,18 @@ export default function ChatInterface() {
         },
         body: JSON.stringify({ query_text: input, history: history.slice(-6) }),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        const detail = errData.detail || `Server error (HTTP ${res.status})`;
+        throw new Error(detail);
+      }
       const data = await res.json();
       setMessages(p => [...p, { sender: 'bot', text: data.text }]);
-    } catch {
-      setMessages(p => [...p, { sender: 'bot', text: "Connection error. Please ensure the backend is running." }]);
+    } catch (err) {
+      const msg = err.message?.includes('Proxy error') || err.message?.includes('warming up')
+        ? `⚠️ ${err.message}`
+        : "⚠️ Connection error. The backend server may be warming up — please wait 30 seconds and try again.";
+      setMessages(p => [...p, { sender: 'bot', text: msg }]);
     } finally {
       setIsTyping(false);
     }
