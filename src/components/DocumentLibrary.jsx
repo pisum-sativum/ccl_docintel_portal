@@ -242,12 +242,14 @@ export default function DocumentLibrary() {
                     {doc.risk_level && (
                       <span className={`text-[10px] px-2 py-0.5 rounded-full font-black uppercase border shadow-sm ${
                         doc.risk_level === 'High' ? 'bg-red-100 text-red-800 border-red-300' :
+                        doc.risk_level === 'Error' ? 'bg-red-100 text-red-800 border-red-300' :
                         doc.risk_level === 'Medium' ? 'bg-orange-100 text-orange-800 border-orange-300' :
                         doc.risk_level === 'Scanning...' ? 'bg-blue-100 text-blue-800 border-blue-200 animate-pulse' :
                         'bg-green-100 text-green-800 border-green-200'
                       }`}>
                         {doc.risk_level === 'Scanning...' ? '⏳ Scanning' : 
                          doc.risk_level === 'None' ? '✅ Safe (No Risk)' : 
+                         doc.risk_level === 'Error' ? '❌ Scan Failed' : 
                          `⚠ ${doc.risk_level} Risk`}
                       </span>
                     )}
