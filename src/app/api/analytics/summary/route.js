@@ -1,9 +1,12 @@
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
   const BACKEND = 'https://ccl-docintel-portal-backend.onrender.com';
   try {
     const authHeader = request.headers.get("Authorization");
     const response = await fetch(`${BACKEND}/api/analytics/summary`, {
-      headers: authHeader ? { "Authorization": authHeader } : {}
+      headers: authHeader ? { "Authorization": authHeader } : {},
+      cache: 'no-store'
     });
     const data = await response.json();
     return Response.json(data, { status: response.status });
