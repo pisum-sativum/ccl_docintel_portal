@@ -50,8 +50,18 @@ export default function DocumentLibrary() {
     fetchDocuments();
     const up = () => fetchDocuments();
     window.addEventListener('ccl-document-uploaded', up);
-    return () => window.removeEventListener('ccl-document-uploaded', up);
-  }, [fetchDocuments]);
+    
+    // Poll every 3 seconds if any document is currently scanning
+    let interval;
+    if (documents.some(d => d.risk_level === 'Scanning...')) {
+      interval = setInterval(() => fetchDocuments(), 3000);
+    }
+    
+    return () => {
+      window.removeEventListener('ccl-document-uploaded', up);
+      if (interval) clearInterval(interval);
+    };
+  }, [fetchDocuments, documents]);
 
   const handleDelete = async (doc) => {
     setModalAlert({
