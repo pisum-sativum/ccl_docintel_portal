@@ -8,9 +8,8 @@ export const metadata = {
   title: "CCL DocIntel",
   description: "Intelligent document compliance system",
   icons: {
-    icon: "/ccl-logo.png",
-    shortcut: "/ccl-logo.png",
-    apple: "/ccl-logo.png",
+    icon: "/ccl-logo.svg",
+    shortcut: "/ccl-logo.svg",
   },
 };
 
