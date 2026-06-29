@@ -77,7 +77,7 @@ export default function LoginPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                placeholder="Enter username"
+                placeholder="viewer"
                 className="w-full bg-bg-base border-2 border-border-strong focus:border-accent rounded-xl px-5 py-3.5 text-text-main text-sm font-bold placeholder:text-text-muted/50 focus:outline-none focus:ring-4 focus:ring-accent/20 transition-all shadow-sm"
               />
             </div>
@@ -92,7 +92,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  placeholder="Enter password"
+                  placeholder="viewer123"
                   className="w-full bg-bg-base border-2 border-border-strong focus:border-accent rounded-xl px-5 py-3.5 pr-12 text-text-main text-sm font-bold placeholder:text-text-muted/50 focus:outline-none focus:ring-4 focus:ring-accent/20 transition-all shadow-sm"
                 />
                 <button
