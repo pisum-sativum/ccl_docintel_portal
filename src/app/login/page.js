@@ -77,7 +77,7 @@ export default function LoginPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                placeholder="viewer"
+                placeholder="Username"
                 className="w-full bg-bg-base border-2 border-border-strong focus:border-accent rounded-xl px-5 py-3.5 text-text-main text-sm font-bold placeholder:text-text-muted/50 focus:outline-none focus:ring-4 focus:ring-accent/20 transition-all shadow-sm"
               />
             </div>
@@ -92,7 +92,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  placeholder="viewer123"
+                  placeholder="Password"
                   className="w-full bg-bg-base border-2 border-border-strong focus:border-accent rounded-xl px-5 py-3.5 pr-12 text-text-main text-sm font-bold placeholder:text-text-muted/50 focus:outline-none focus:ring-4 focus:ring-accent/20 transition-all shadow-sm"
                 />
                 <button
@@ -164,6 +164,19 @@ export default function LoginPage() {
             >
               {isLoading ? "Authenticating..." : "Secure Login"}
             </button>
+
+            <div className="rounded-xl border border-border-strong bg-bg-base/60 px-4 py-3 text-xs leading-relaxed text-text-muted font-semibold">
+              <p className="font-black text-text-main mb-1">
+                Role based access
+              </p>
+              <p>
+                You can sign in as either an{" "}
+                <span className="text-text-main font-black">Admin</span> or a{" "}
+                <span className="text-text-main font-black">Viewer</span>.
+                Viewers can access the dashboard and read documents only. Admins
+                can upload, edit, update, and delete documents.
+              </p>
+            </div>
           </form>
         </div>
       </div>
