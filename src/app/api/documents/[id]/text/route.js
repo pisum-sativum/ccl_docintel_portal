@@ -1,70 +1,68 @@
-// Shared helper: returns a clear 500 if the env var isn't configured in Vercel
-function requireBackend() {
-  return 'https://ccl-docintel-portal-backend.onrender.com';
-}
+export const maxDuration = 60;
 
-// GET/POST /api/documents/[id]/text  →  GET backend /api/documents/{id}/text
-// The frontend view modal sends a POST; the backend accepts both via dual decorator.
-export async function GET(request, { params }) {
-  try {
-    const BACKEND = requireBackend();
-    const id = (await params).id;
-    const authHeader = request.headers.get("Authorization");
-    const response = await fetch(`${BACKEND}/api/documents/${id}/text`, {
-      method: "GET",
-      headers: authHeader ? { "Authorization": authHeader } : {}
-    });
-    const text = await response.text();
-    let data;
-    try { data = JSON.parse(text); }
-    catch { data = { detail: text || `Backend error (HTTP ${response.status})` }; }
-    return Response.json(data, { status: response.status });
-  } catch (err) {
-    return Response.json({ detail: err.message }, { status: 502 });
-  }
-}
+const BACKEND = "https://ccl-docintel-portal-backend.onrender.com";
 
-// Frontend sends POST to trigger text load (DocumentLibrary.jsx line 76)
-export async function POST(request, { params }) {
+async function proxyToBackend(backendUrl, method, authHeader, bodyJson = null) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 55000);
   try {
-    const BACKEND = requireBackend();
-    const id = (await params).id;
-    const authHeader = request.headers.get("Authorization");
-    const response = await fetch(`${BACKEND}/api/documents/${id}/text`, {
-      method: "GET",   // Backend uses GET; we translate POST→GET here
-      headers: authHeader ? { "Authorization": authHeader } : {}
-    });
-    const text = await response.text();
-    let data;
-    try { data = JSON.parse(text); }
-    catch { data = { detail: text || `Backend error (HTTP ${response.status})` }; }
-    return Response.json(data, { status: response.status });
-  } catch (err) {
-    return Response.json({ detail: err.message }, { status: 502 });
-  }
-}
-
-// PUT /api/documents/[id]/text  →  PUT backend /api/documents/{id}/text
-export async function PUT(request, { params }) {
-  try {
-    const BACKEND = requireBackend();
-    const id = (await params).id;
-    const authHeader = request.headers.get("Authorization");
-    const body = await request.json();
-    const response = await fetch(`${BACKEND}/api/documents/${id}/text`, {
-      method: "PUT",
+    const opts = {
+      method,
       headers: {
-        "Content-Type": "application/json",
-        ...(authHeader ? { "Authorization": authHeader } : {})
+        ...(authHeader ? { Authorization: authHeader } : {}),
+        ...(bodyJson ? { "Content-Type": "application/json" } : {}),
       },
-      body: JSON.stringify(body)
-    });
+      signal: controller.signal,
+      ...(bodyJson ? { body: JSON.stringify(bodyJson) } : {}),
+    };
+    const response = await fetch(backendUrl, opts);
+    clearTimeout(timeout);
     const text = await response.text();
     let data;
-    try { data = JSON.parse(text); }
-    catch { data = { detail: text || `Backend error (HTTP ${response.status})` }; }
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { detail: text || `Backend error (HTTP ${response.status})` };
+    }
     return Response.json(data, { status: response.status });
   } catch (err) {
-    return Response.json({ detail: err.message }, { status: 502 });
+    clearTimeout(timeout);
+    const isTimeout = err.name === "AbortError";
+    return Response.json(
+      { detail: isTimeout ? "Request timed out." : err.message },
+      { status: 502 },
+    );
   }
+}
+
+// GET /api/documents/[id]/text
+export async function GET(request, { params }) {
+  const id = (await params).id;
+  return proxyToBackend(
+    `${BACKEND}/api/documents/${id}/text`,
+    "GET",
+    request.headers.get("Authorization"),
+  );
+}
+
+// POST  (frontend sends POST; backend accepts both GET and POST)
+export async function POST(request, { params }) {
+  const id = (await params).id;
+  return proxyToBackend(
+    `${BACKEND}/api/documents/${id}/text`,
+    "GET",
+    request.headers.get("Authorization"),
+  );
+}
+
+// PUT /api/documents/[id]/text
+export async function PUT(request, { params }) {
+  const id = (await params).id;
+  const body = await request.json();
+  return proxyToBackend(
+    `${BACKEND}/api/documents/${id}/text`,
+    "PUT",
+    request.headers.get("Authorization"),
+    body,
+  );
 }

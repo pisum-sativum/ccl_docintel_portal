@@ -74,35 +74,35 @@ export default function DocumentLibrary() {
       type: "confirm",
       onConfirm: async () => {
         setModalAlert(null);
-        setDeleting(doc.id);
+
+        // Optimistic update: remove the row instantly before the API responds.
+        setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
+        setTotal((prev) => Math.max(0, prev - 1));
+
         try {
           const res = await fetch(`/api/documents/${doc.id}`, {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` },
           });
           const body = await res.json().catch(() => ({}));
-          if (res.ok) {
-            await fetchDocuments();
-            setModalAlert({
-              title: "Deleted",
-              message: `"${doc.filename}" has been removed.`,
-              type: "info",
-            });
-          } else {
+          if (!res.ok) {
+            // Revert optimistic update on failure
+            fetchDocuments();
             setModalAlert({
               title: "Delete Failed",
               message: body.detail || `Server error (${res.status})`,
               type: "error",
             });
           }
+          // On success: row is already gone, no re-fetch needed.
         } catch (e) {
+          // Revert optimistic update on network error
+          fetchDocuments();
           setModalAlert({
             title: "Error",
             message: `Network error: ${e.message}`,
             type: "error",
           });
-        } finally {
-          setDeleting(null);
         }
       },
     });
