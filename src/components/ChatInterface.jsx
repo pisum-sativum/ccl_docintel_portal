@@ -4,6 +4,10 @@ import { useAuth } from "../context/AuthContext";
 
 const RETRY_DELAY_S = 20; // seconds to wait before auto-retrying on cold-start 502
 
+function cleanMarkdownArtifacts(text) {
+  return (text || "").replace(/\*\*/g, "").replace(/\*/g, "").trim();
+}
+
 function renderInlineMarkdown(text, keyPrefix = "inline") {
   const parts = text.split(
     /(\[Source:[^\]]+\]|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g,
@@ -35,14 +39,18 @@ function renderInlineMarkdown(text, keyPrefix = "inline") {
     }
 
     if (/^\*\*[^*]+\*\*$/.test(part)) {
-      return <strong key={key}>{part.slice(2, -2)}</strong>;
+      return (
+        <strong key={key} className="font-black text-text-main">
+          {cleanMarkdownArtifacts(part)}
+        </strong>
+      );
     }
 
     if (/^\*[^*]+\*$/.test(part)) {
-      return <em key={key}>{part.slice(1, -1)}</em>;
+      return <em key={key}>{cleanMarkdownArtifacts(part)}</em>;
     }
 
-    return part;
+    return cleanMarkdownArtifacts(part);
   });
 }
 
@@ -130,7 +138,7 @@ function renderMarkdown(text) {
         blocks.push(
           <p
             key={`p-${segmentIndex}-${blocks.length}`}
-            className="leading-relaxed"
+            className="leading-relaxed text-text-main/95"
           >
             {renderInlineMarkdown(text, `p-${segmentIndex}-${blocks.length}`)}
           </p>,
@@ -144,7 +152,7 @@ function renderMarkdown(text) {
         blocks.push(
           <ul
             key={`ul-${segmentIndex}-${blocks.length}`}
-            className="list-disc pl-5 space-y-1"
+            className="list-disc pl-5 space-y-1 marker:text-accent marker:font-black"
           >
             {listItems.map((item, i) => (
               <li key={i}>
@@ -163,7 +171,7 @@ function renderMarkdown(text) {
         blocks.push(
           <ol
             key={`ol-${segmentIndex}-${blocks.length}`}
-            className="list-decimal pl-5 space-y-1"
+            className="list-decimal pl-5 space-y-1 marker:text-accent marker:font-black"
           >
             {orderedItems.map((item, i) => (
               <li key={i}>
@@ -211,13 +219,39 @@ function renderMarkdown(text) {
         blocks.push(
           <h4
             key={`h-${segmentIndex}-${blocks.length}`}
-            className={`${cls} font-black text-text-main mt-1`}
+            className={`${cls} font-black text-text-main mt-2 px-3 py-2 rounded-lg bg-bg-surface border-l-4 border-accent`}
           >
             {renderInlineMarkdown(
-              heading[2],
+              cleanMarkdownArtifacts(heading[2]),
               `h-${segmentIndex}-${blocks.length}`,
             )}
           </h4>,
+        );
+        return;
+      }
+
+      const section =
+        trimmed.match(/^\*\*([^*]{2,80}:)\*\*\s*(.*)$/) ||
+        trimmed.match(/^([A-Z][A-Za-z0-9 /&()\-]{2,80}:)\s*(.*)$/);
+      if (section) {
+        flushAll();
+        blocks.push(
+          <div
+            key={`section-${segmentIndex}-${blocks.length}`}
+            className="rounded-xl bg-bg-surface border border-border-subtle px-4 py-3 space-y-2"
+          >
+            <div className="text-xs uppercase tracking-widest font-black text-accent">
+              {cleanMarkdownArtifacts(section[1]).replace(/:$/, "")}
+            </div>
+            {section[2] ? (
+              <div className="leading-relaxed text-text-main/95">
+                {renderInlineMarkdown(
+                  section[2],
+                  `section-${segmentIndex}-${blocks.length}`,
+                )}
+              </div>
+            ) : null}
+          </div>,
         );
         return;
       }
@@ -234,7 +268,7 @@ function renderMarkdown(text) {
       if (bullet) {
         flushParagraph();
         orderedItems = [];
-        listItems.push(bullet[1]);
+        listItems.push(cleanMarkdownArtifacts(bullet[1]));
         return;
       }
 
@@ -242,11 +276,11 @@ function renderMarkdown(text) {
       if (ordered) {
         flushParagraph();
         listItems = [];
-        orderedItems.push(ordered[1]);
+        orderedItems.push(cleanMarkdownArtifacts(ordered[1]));
         return;
       }
 
-      paragraph.push(trimmed);
+      paragraph.push(cleanMarkdownArtifacts(trimmed));
     });
 
     flushAll();
