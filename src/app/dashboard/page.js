@@ -33,6 +33,13 @@ export default function DashboardPage() {
     activeFlags: "—",
     complianceIntegrity: "—",
   });
+  const canUpload = user?.role === "admin" || user?.role === "operator";
+  const roleLabel =
+    user?.role === "admin"
+      ? "⚡ Admin"
+      : user?.role === "operator"
+        ? "⬆ Operator"
+        : "👁 Viewer";
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
@@ -87,11 +94,11 @@ export default function DashboardPage() {
               Welcome back,{" "}
               <span className="text-text-main">{user.username}</span>
               <span className="ml-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent text-accent-text text-xs font-black shadow-sm">
-                {user.role === "admin" ? "⚡ Admin" : "👁 Viewer"}
+                {roleLabel}
               </span>
             </p>
           </div>
-          {user.role !== "admin" && (
+          {!canUpload && (
             <div className="flex items-center gap-3 bg-bg-surface border-2 border-border-strong rounded-xl px-5 py-3 text-sm text-text-main font-bold shadow-sm">
               <svg
                 className="w-5 h-5 text-accent"
@@ -185,7 +192,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex flex-col gap-8">
-            {user.role === "admin" && (
+            {canUpload && (
               <div className="surface-card overflow-hidden">
                 <UploadWidget />
               </div>
