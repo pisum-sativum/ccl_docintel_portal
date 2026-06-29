@@ -170,13 +170,10 @@ export default function LoginPage() {
                 Role based access
               </p>
               <p>
-                You can sign in as an{" "}
+                Available roles:{" "}
                 <span className="text-text-main font-black">Admin</span>,{" "}
-                <span className="text-text-main font-black">Operator</span>, or{" "}
+                <span className="text-text-main font-black">Operator</span>,{" "}
                 <span className="text-text-main font-black">Viewer</span>.
-                Operators can upload documents, use the AI chat, and review
-                alerts, but cannot edit or delete records. Admins keep all
-                privileges, while viewers remain read-only.
               </p>
             </div>
           </form>
