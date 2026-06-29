@@ -4,6 +4,257 @@ import { useAuth } from "../context/AuthContext";
 
 const RETRY_DELAY_S = 20; // seconds to wait before auto-retrying on cold-start 502
 
+function renderInlineMarkdown(text, keyPrefix = "inline") {
+  const parts = text.split(
+    /(\[Source:[^\]]+\]|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g,
+  );
+
+  return parts.map((part, index) => {
+    const key = `${keyPrefix}-${index}`;
+
+    if (/^\[Source:/.test(part)) {
+      return (
+        <span
+          key={key}
+          className="inline-flex items-center px-2 py-0.5 mx-1 rounded-md bg-accent text-accent-text text-xs font-black shadow-sm"
+        >
+          {part}
+        </span>
+      );
+    }
+
+    if (/^`[^`]+`$/.test(part)) {
+      return (
+        <code
+          key={key}
+          className="px-1.5 py-0.5 rounded bg-bg-surface border border-border-subtle font-mono text-[0.9em]"
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+
+    if (/^\*\*[^*]+\*\*$/.test(part)) {
+      return <strong key={key}>{part.slice(2, -2)}</strong>;
+    }
+
+    if (/^\*[^*]+\*$/.test(part)) {
+      return <em key={key}>{part.slice(1, -1)}</em>;
+    }
+
+    return part;
+  });
+}
+
+function renderMarkdownTable(rows, key) {
+  const parsedRows = rows
+    .filter(
+      (row) => !/^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(row),
+    )
+    .map((row) =>
+      row
+        .trim()
+        .replace(/^\|/, "")
+        .replace(/\|$/, "")
+        .split("|")
+        .map((cell) => cell.trim()),
+    );
+
+  if (!parsedRows.length) return null;
+
+  return (
+    <div
+      key={key}
+      className="overflow-x-auto rounded-xl border border-border-subtle"
+    >
+      <table className="min-w-full text-xs border-collapse">
+        <thead className="bg-bg-surface text-text-main">
+          <tr>
+            {parsedRows[0].map((cell, i) => (
+              <th
+                key={i}
+                className="px-3 py-2 text-left font-black border-b border-border-subtle"
+              >
+                {renderInlineMarkdown(cell, `${key}-head-${i}`)}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {parsedRows.slice(1).map((row, r) => (
+            <tr key={r} className="border-t border-border-subtle/60">
+              {row.map((cell, c) => (
+                <td key={c} className="px-3 py-2 align-top">
+                  {renderInlineMarkdown(cell, `${key}-cell-${r}-${c}`)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function renderMarkdown(text) {
+  const blocks = [];
+  const normalized = (text || "").replace(/\r\n/g, "\n");
+  const segments = normalized.split(/```/g);
+
+  segments.forEach((segment, segmentIndex) => {
+    if (!segment) return;
+
+    if (segmentIndex % 2 === 1) {
+      const lines = segment.replace(/^\w+\n/, "");
+      blocks.push(
+        <pre
+          key={`code-${segmentIndex}`}
+          className="overflow-x-auto rounded-xl bg-bg-surface border border-border-subtle p-3 text-xs font-mono leading-relaxed"
+        >
+          <code>{lines.trim()}</code>
+        </pre>,
+      );
+      return;
+    }
+
+    const lines = segment.split("\n");
+    let paragraph = [];
+    let listItems = [];
+    let orderedItems = [];
+    let tableRows = [];
+
+    const flushParagraph = () => {
+      if (!paragraph.length) return;
+      const text = paragraph.join(" ").trim();
+      if (text) {
+        blocks.push(
+          <p
+            key={`p-${segmentIndex}-${blocks.length}`}
+            className="leading-relaxed"
+          >
+            {renderInlineMarkdown(text, `p-${segmentIndex}-${blocks.length}`)}
+          </p>,
+        );
+      }
+      paragraph = [];
+    };
+
+    const flushLists = () => {
+      if (listItems.length) {
+        blocks.push(
+          <ul
+            key={`ul-${segmentIndex}-${blocks.length}`}
+            className="list-disc pl-5 space-y-1"
+          >
+            {listItems.map((item, i) => (
+              <li key={i}>
+                {renderInlineMarkdown(
+                  item,
+                  `ul-${segmentIndex}-${blocks.length}-${i}`,
+                )}
+              </li>
+            ))}
+          </ul>,
+        );
+        listItems = [];
+      }
+
+      if (orderedItems.length) {
+        blocks.push(
+          <ol
+            key={`ol-${segmentIndex}-${blocks.length}`}
+            className="list-decimal pl-5 space-y-1"
+          >
+            {orderedItems.map((item, i) => (
+              <li key={i}>
+                {renderInlineMarkdown(
+                  item,
+                  `ol-${segmentIndex}-${blocks.length}-${i}`,
+                )}
+              </li>
+            ))}
+          </ol>,
+        );
+        orderedItems = [];
+      }
+    };
+
+    const flushTable = () => {
+      if (!tableRows.length) return;
+      const table = renderMarkdownTable(
+        tableRows,
+        `table-${segmentIndex}-${blocks.length}`,
+      );
+      if (table) blocks.push(table);
+      tableRows = [];
+    };
+
+    const flushAll = () => {
+      flushParagraph();
+      flushLists();
+      flushTable();
+    };
+
+    lines.forEach((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        flushAll();
+        return;
+      }
+
+      const heading = trimmed.match(/^(#{1,3})\s+(.+)$/);
+      if (heading) {
+        flushAll();
+        const level = heading[1].length;
+        const cls =
+          level === 1 ? "text-base" : level === 2 ? "text-sm" : "text-xs";
+        blocks.push(
+          <h4
+            key={`h-${segmentIndex}-${blocks.length}`}
+            className={`${cls} font-black text-text-main mt-1`}
+          >
+            {renderInlineMarkdown(
+              heading[2],
+              `h-${segmentIndex}-${blocks.length}`,
+            )}
+          </h4>,
+        );
+        return;
+      }
+
+      if (trimmed.includes("|") && /^\|?.+\|.+\|?$/.test(trimmed)) {
+        flushParagraph();
+        flushLists();
+        tableRows.push(trimmed);
+        return;
+      }
+      flushTable();
+
+      const bullet = trimmed.match(/^[-*]\s+(.+)$/);
+      if (bullet) {
+        flushParagraph();
+        orderedItems = [];
+        listItems.push(bullet[1]);
+        return;
+      }
+
+      const ordered = trimmed.match(/^\d+\.\s+(.+)$/);
+      if (ordered) {
+        flushParagraph();
+        listItems = [];
+        orderedItems.push(ordered[1]);
+        return;
+      }
+
+      paragraph.push(trimmed);
+    });
+
+    flushAll();
+  });
+
+  return <div className="space-y-3">{blocks}</div>;
+}
+
 export default function ChatInterface() {
   const { token } = useAuth();
   const [messages, setMessages] = useState([
@@ -121,21 +372,6 @@ export default function ChatInterface() {
     setIsTyping(false);
   };
 
-  const renderText = (text) => {
-    return text.split(/(\[Source:[^\]]+\])/g).map((part, i) =>
-      /^\[Source:/.test(part) ? (
-        <span
-          key={i}
-          className="inline-flex items-center px-2 py-0.5 mx-1 rounded-md bg-accent text-accent-text text-xs font-black shadow-sm"
-        >
-          {part}
-        </span>
-      ) : (
-        part
-      ),
-    );
-  };
-
   const isServerBusy = isTyping || !!retryState;
 
   return (
@@ -239,13 +475,13 @@ export default function ChatInterface() {
             </div>
 
             <div
-              className={`max-w-[75%] px-5 py-4 rounded-2xl text-sm font-semibold leading-relaxed whitespace-pre-wrap shadow-md ${
+              className={`max-w-[75%] px-5 py-4 rounded-2xl text-sm font-semibold leading-relaxed shadow-md ${
                 msg.sender === "user"
-                  ? "bg-primary text-primary-text rounded-br-sm"
+                  ? "bg-primary text-primary-text rounded-br-sm whitespace-pre-wrap"
                   : "bg-bg-base border-2 border-border-subtle text-text-main rounded-bl-sm"
               }`}
             >
-              {msg.sender === "bot" ? renderText(msg.text) : msg.text}
+              {msg.sender === "bot" ? renderMarkdown(msg.text) : msg.text}
             </div>
           </div>
         ))}
